@@ -2,16 +2,12 @@ import pygame
 import random
 import os
 
-# ==========================================
-# الإعدادات العامة للمقاسات والأبعاد
-# ==========================================
 TILE_SIZE = 40  # حجم البلاطة (بالبكسل)
 OFFSET_Y = 60   # الهامش العلوي لشريط المعلومات
 SCREEN_WIDTH = 26 * TILE_SIZE  # 1040 بكسل
 SCREEN_HEIGHT = 17 * TILE_SIZE + OFFSET_Y  # 740 بكسل
 FPS = 60
 
-# الألوان
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
@@ -20,11 +16,6 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 GOLD = (255, 215, 0)
 VIOLET = (148, 0, 211)
-
-
-# ==========================================
-# فئات ومكونات اللعبة
-# ==========================================
 
 class Player:
     def __init__(self, x, y, img=None):
@@ -76,7 +67,7 @@ class Enemy:
         self.start_pos = (x, y)
         self.rect = pygame.Rect(x, y, 32, 32)
         self.image = img
-        self.speed = 2  # يقبل القسمة على TILE_SIZE لضمان محاذاة دقيقة
+        self.speed = 2  
         self.dir_x = 0
         self.dir_y = 0
 
@@ -86,7 +77,6 @@ class Enemy:
         self.dir_y = 0
 
     def move(self, bricks, player_rect, is_frightened=False):
-        # التحقق مما إذا كان العدو عند مركز البلاطة تماماً لاتخاذ القرار
         rel_x = (self.rect.x - 4) % TILE_SIZE
         rel_y = (self.rect.y - 4 - OFFSET_Y) % TILE_SIZE
         at_center = (rel_x == 0 and rel_y == 0)
@@ -101,7 +91,6 @@ class Enemy:
 
             valid_dirs = []
             for dx, dy in all_directions:
-                # تجنب الرجوع للخلف 180 درجة إلا عند انسداد الطريق
                 if (dx == -self.dir_x and dy == 0 and self.dir_x != 0) or \
                    (dy == -self.dir_y and dx == 0 and self.dir_y != 0):
                     continue
@@ -113,7 +102,6 @@ class Enemy:
                 if not any(test_rect.colliderect(b.rect) for b in bricks):
                     valid_dirs.append((dx, dy))
 
-            # في حال كان في طريق مسدود، يسمح بالرجوع للخلف
             if not valid_dirs:
                 for dx, dy in all_directions:
                     step_x = (dx // abs(dx)) * TILE_SIZE if dx != 0 else 0
@@ -129,16 +117,13 @@ class Enemy:
                     return (projected_x - player_rect.x) ** 2 + (projected_y - player_rect.y) ** 2
 
                 if is_frightened:
-                    # الهروب من اللاعب
                     self.dir_x, self.dir_y = max(valid_dirs, key=dist_to_target)
                 else:
-                    # مطاردة اللاعب بذكاء مع تنويع عشوائي طفيف لمنع تراكم الأشباح
                     if random.random() < 0.75:
                         self.dir_x, self.dir_y = min(valid_dirs, key=dist_to_target)
                     else:
                         self.dir_x, self.dir_y = random.choice(valid_dirs)
 
-        # تحريك العدو
         self.rect.x += self.dir_x
         self.rect.y += self.dir_y
 
@@ -152,9 +137,6 @@ class Enemy:
                 pygame.draw.rect(screen, GREEN, self.rect)
 
 
-# ==========================================
-# إدارة أعلى نتيجة (Highscore)
-# ==========================================
 def manage_highscore(score=0, save=False):
     filename = "highscore.txt"
     if save:
@@ -175,7 +157,6 @@ def manage_highscore(score=0, save=False):
             return 0
 
 
-# مصفوفة خريطة اللعبة (1: جدار، 0: ممر)
 game_map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
@@ -218,7 +199,6 @@ def spawn_single_apple(player, apples, img, is_golden=False):
 def generate_level(images):
     bricks, apples, enemies = [], [], []
 
-    # موقع بداية اللاعب محاذى للشبكة
     player = Player(1 * TILE_SIZE + 4, 1 * TILE_SIZE + OFFSET_Y + 4, images.get('player'))
 
     for r_idx, row in enumerate(game_map):
@@ -236,7 +216,6 @@ def generate_level(images):
     if gold_apple:
         apples.append(gold_apple)
 
-    # مواقع الأعداء الابتدائية محاذاة بدقة لشبكة البلاطات
     enemy_positions = [
         (9 * TILE_SIZE + 4, 5 * TILE_SIZE + OFFSET_Y + 4),
         (4 * TILE_SIZE + 4, 11 * TILE_SIZE + OFFSET_Y + 4),
@@ -302,11 +281,9 @@ def main():
 
             is_player_super = player.power_timer > 0
 
-            # تحديث حركة الأعداء
             for enemy in enemies:
                 enemy.move(bricks, player.rect, is_frightened=is_player_super)
 
-            # معالجة التقاط التفاح
             for apple in apples[:]:
                 if player.rect.colliderect(apple.rect):
                     apples.remove(apple)
@@ -326,7 +303,6 @@ def main():
                         highscore = score
                         manage_highscore(highscore, save=True)
 
-            # الاصطدام بالأعداء
             for enemy in enemies:
                 if player.rect.colliderect(enemy.rect):
                     if is_player_super:
@@ -344,7 +320,6 @@ def main():
                             game_over = True
                         break
 
-        # العرض والرسم
         screen.fill(BLACK)
 
         for obj in bricks + apples:
@@ -355,7 +330,6 @@ def main():
 
         player.draw(screen)
 
-        # واجهة المعلومات العلوية
         screen.blit(font.render(f"Score: {score}", True, WHITE), (30, 15))
         screen.blit(font.render(f"High Score: {highscore}", True, WHITE), (SCREEN_WIDTH // 2 - 60, 15))
         screen.blit(font.render(f"Lives: {player.lives}", True, WHITE), (SCREEN_WIDTH - 120, 15))
