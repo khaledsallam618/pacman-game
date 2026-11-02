@@ -2,10 +2,10 @@ import pygame
 import random
 import os
 
-TILE_SIZE = 40  # حجم البلاطة (بالبكسل)
-OFFSET_Y = 60   # الهامش العلوي لشريط المعلومات
-SCREEN_WIDTH = 26 * TILE_SIZE  # 1040 بكسل
-SCREEN_HEIGHT = 17 * TILE_SIZE + OFFSET_Y  # 740 بكسل
+TILE_SIZE = 40 
+OFFSET_Y = 60   
+SCREEN_WIDTH = 26 * TILE_SIZE  
+SCREEN_HEIGHT = 17 * TILE_SIZE + OFFSET_Y  
 FPS = 60
 
 WHITE = (255, 255, 255)
